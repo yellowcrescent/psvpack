@@ -3,7 +3,7 @@
 """
 
 psvpack.cli
-Digital capture & processing helper
+PS Vita package tool
 CLI entry-point
 
 @author   Jacob Hipps <jacob@ycnrg.org>
@@ -51,13 +51,13 @@ def parse_cli(show_help=False):
 
     # use defaults stored in __init__
     aparser.set_defaults(loglevel=logging.INFO, command=None, uxroot='./', install=True, noverify=False,
-                         glist="PSV", regions=['US', 'JP'], config="~/.config/psvpack/config.yaml")
+                         glist="PSV", regions=['US', 'JP'], config=get_platform_confpath())
 
     aparser.add_argument("command", action="store", nargs="?", metavar="COMMAND", help="Command [search, install]")
     aparser.add_argument("game", action="store", nargs="?", metavar="GAME", help="Search term, Title ID, or package filename")
     aparser.add_argument("--uxroot", "-r", action="store", metavar="PATH", help="path to ux0 root (connected Vita or mounted SD card)")
     aparser.add_argument("--glist", "-g", action="store", metavar="LIST", help="game list [PSV*,PSM,PSX,PSP,PSV_DLC,PSP_DLC]")
-    aparser.add_argument("--config", "-c", action="store", metavar="PATH", help="config file [default: ~/.config/psvpack/config.yaml]")
+    aparser.add_argument("--config", "-c", action="store", metavar="PATH", help="config file [default: %%default]")
     aparser.add_argument("--noinstall", "-N", dest="install", action="store_false", help="download pkg only; do NOT install")
     aparser.add_argument("--noverify", "-X", action="store_true", help="skip existing PKG checksum verification")
     aparser.add_argument("--getall", action="store_true", help="fetch all related items (eg. for DLC)")

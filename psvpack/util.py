@@ -13,6 +13,8 @@ https://ycnrg.org/
 """
 
 import os
+import re
+import platform
 import logging
 import subprocess
 
@@ -24,9 +26,13 @@ from psvpack import default_config, conf_header
 logger = logging.getLogger('psvpack')
 
 
-def load_config(fpath="~/.config/psvpack/config.yaml"):
+def load_config(fpath=None, interactive=True):
+    if fpath is None:
+        fpath = get_platform_confpath('config.yaml')
     rpath = os.path.realpath(os.path.expanduser(fpath))
     fdir = os.path.dirname(rpath)
+
+    logger.debug("Using config path: %s", fpath)
 
     if not os.path.exists(fdir):
         try:
@@ -38,15 +44,7 @@ def load_config(fpath="~/.config/psvpack/config.yaml"):
 
     # create default config if doesn't exist
     if not os.path.exists(rpath):
-        try:
-            with open(rpath, 'w') as f:
-                f.write(conf_header)
-                yaml.dump(default_config, stream=f, Dumper=yaml.SafeDumper, default_flow_style=False)
-            logger.warning("Wrote default config to: %s", rpath)
-            launch_editor(rpath)
-        except Exception as e:
-            logger.error("Failed to write default configuration: %s", str(e))
-            return None
+        save_config(get_default_config())
 
     # load config
     try:
@@ -57,7 +55,39 @@ def load_config(fpath="~/.config/psvpack/config.yaml"):
         logger.error("Failed to load config from %s: %s", rpath, str(e))
         logger.warning("Using default configuration")
         tconfig = default_config
+
+    logger.debug("Loaded config:\n%s", tconfig)
     return tconfig
+
+def save_config(config, fpath=None):
+    """
+    Save user configuration to YAML file
+    If @fpath is not specified, the default platform-specific path is used
+    """
+    if fpath is None:
+        fpath = get_platform_confpath('config.yaml')
+    rpath = os.path.realpath(os.path.expanduser(fpath))
+    fdir = os.path.dirname(rpath)
+
+    try:
+        with open(rpath, 'w') as f:
+            f.write(conf_header)
+            yaml.dump(config, stream=f, Dumper=yaml.SafeDumper, default_flow_style=False)
+        logger.info("Wrote config to: %s", rpath)
+    except Exception as e:
+        logger.error("Failed to write configuration: %s", str(e))
+        return str(e)
+    return True
+
+def get_default_config():
+    """
+    Generate default config
+    """
+    dconf = default_config
+    for tkey in dconf.keys():
+        if isinstance(dconf[tkey], str):
+            dconf[tkey] = re.sub(r'{{platform_confpath}}', get_platform_confpath(), dconf[tkey])
+    return dconf
 
 def launch_editor(confpath):
     """
@@ -108,3 +138,18 @@ def sha256sum(fpath):
         return None
     else:
         return so.split()[0].strip().decode('utf-8', errors='ignore')
+
+def get_platform_confpath(fname=None):
+    """
+    Determine the default config path for
+    the current platform
+    """
+    pathlist = {
+        'Linux': "~/.config/psvpack",
+        'Darwin': "~/.config/psvpack",
+        'Windows': "%APPDATA%/psvpack",
+    }
+    ppath = os.path.realpath(os.path.expandvars(os.path.expanduser(pathlist[platform.system()])))
+    if fname:
+        ppath = os.path.join(ppath, fname)
+    return ppath

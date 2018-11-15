@@ -9,7 +9,7 @@ unsafe-load-any-extensions=yes
 
 [MESSAGES CONTROL]
 disable=R,I,deprecated-lambda,global-statement,superfluous-parens,bare-except,broad-except,bad-continuation,bad-builtin,unnecessary-lambda,multiple-statements,unused-wildcard-import,wildcard-import,invalid-name,line-too-long,global-variable-not-assigned,protected-access,dangerous-default-value,old-style-class,no-init
-ignored-modules=setproctitle
+ignored-modules=setproctitle,E0602
 
 [FORMAT]
 max-line-length=120

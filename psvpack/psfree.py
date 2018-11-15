@@ -13,6 +13,7 @@ https://ycnrg.org/
 """
 
 import os
+import codecs
 import errno
 import re
 import logging
@@ -39,18 +40,32 @@ class TSVManager(object):
     last_update = None
     ttl = None
     glist = []
+    loaded = False
+    pd = None
 
-    def __init__(self, tsvname, config):
+    def __init__(self, tsvname, config, pd=None):
         try:
             self.ttl = int(config['cache_ttl'])
         except:
             logger.error("Invalid `cache_ttl` specified in config file. Using default.")
             self.ttl = 86400
+        self.tsvname = tsvname
+        self.pd = pd
         self.url = config['tsv_urls'][tsvname.upper()]
         self.filename = os.path.join(os.path.expanduser(config['cache_dir']), 'tsv', self.url.split('/')[-1])
         logger.debug("Using TSV for %s: URL=%s / Local=%s", tsvname, self.url, self.filename)
         self.check_for_update()
         self.load_tsv()
+
+    def set_progress(self, msg=None, value=None):
+        """
+        Update progress dialog, if one is specified (self.pd)
+        """
+        if self.pd:
+            if msg is not None:
+                self.pd.setLabelText(msg)
+            if value is not None:
+                self.pd.setValue(value)
 
     def check_for_update(self, force=False):
         """
@@ -80,6 +95,7 @@ class TSVManager(object):
         if do_update:
             try:
                 logger.info("Updating cached TSV file from %s", self.url)
+                self.set_progress("Downloading updated game list (%s)..." % (self.tsvname))
                 r = requests.get(self.url)
                 r.raise_for_status()
             except Exception as e:
@@ -101,8 +117,9 @@ class TSVManager(object):
                     logger.error("Failed to create TSV cache directory %s: %s", cache_dir, str(e))
 
             try:
-                with open(self.filename, 'w') as f:
-                    f.write(r.content.decode('utf-8', errors='ignore'))
+                with codecs.open(self.filename, 'w', 'utf8') as f:
+                    f.write(r.content.decode('utf8'))
+                logger.info("Wrote TSV file successfully: %s", self.filename)
                 # TODO: need to figure out a better way to track last update
                 #os.utime(self.filename, (nowtime.timestamp, self.last_update.timestamp))
             except Exception as e:
@@ -115,9 +132,11 @@ class TSVManager(object):
         """
         Parse TSV file
         """
+        self.set_progress("Parsing game list...", 50)
         try:
-            with open(self.filename) as f:
+            with codecs.open(self.filename, 'r', 'utf8') as f:
                 self.glist = [x for x in csv.DictReader(f, dialect='excel-tab')]
+            self.loaded = True
             return True
         except Exception as e:
             logger.error("Failed to parse TSV file: %s", str(e))

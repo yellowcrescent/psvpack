@@ -22,7 +22,8 @@ setup(
     },
 
     entry_points = {
-        'console_scripts': [ 'psvpack = psvpack.cli:_main' ]
+        'console_scripts': [ 'psvpack = psvpack.cli:_main' ],
+        'gui_scripts': [ 'psvpack-qt = psvpack.gui:_gmain' ],
     }
 
     # could also include long_description, download_url, classifiers, etc.

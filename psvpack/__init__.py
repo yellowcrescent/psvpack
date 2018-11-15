@@ -17,7 +17,7 @@ __version__ = '0.1.0'
 __date__ = '06 Aug 2018'
 
 default_config = {
-    'cache_dir': "~/.config/psvpack",
+    'cache_dir': "{{platform_confpath}}",
     'cache_ttl': 86400,
     'pkg2zip': "/usr/local/bin/pkg2zip",
     'tsv_urls': {
