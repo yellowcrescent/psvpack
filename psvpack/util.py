@@ -32,7 +32,7 @@ def load_config(fpath=None, interactive=True):
     rpath = os.path.realpath(os.path.expanduser(fpath))
     fdir = os.path.dirname(rpath)
 
-    logger.debug("Using config path: %s", fpath)
+    logger.debug("Using config path: %s (dir: %s)", fpath, fdir)
 
     if not os.path.exists(fdir):
         try:

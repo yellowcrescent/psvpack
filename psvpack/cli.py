@@ -51,7 +51,7 @@ def parse_cli(show_help=False):
 
     # use defaults stored in __init__
     aparser.set_defaults(loglevel=logging.INFO, command=None, uxroot='./', install=True, noverify=False,
-                         glist="PSV", regions=['US', 'JP'], config=get_platform_confpath())
+                         glist="PSV", regions=['US', 'JP'], config=get_platform_confpath('config.yaml'))
 
     aparser.add_argument("command", action="store", nargs="?", metavar="COMMAND", help="Command [search, install]")
     aparser.add_argument("game", action="store", nargs="?", metavar="GAME", help="Search term, Title ID, or package filename")

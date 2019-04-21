@@ -13,8 +13,8 @@ https://ycnrg.org/
 
 """
 
-__version__ = '0.1.0'
-__date__ = '06 Aug 2018'
+__version__ = '0.1.1'
+__date__ = '21 Apr 2019'
 
 default_config = {
     'cache_dir': "{{platform_confpath}}",
